@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>L-SHAY Music Visualizer</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #111;
+      color: #fff;
+      overflow-x: hidden;
+    }
+    nav {
+      display: flex;
+      justify-content: space-between;
+      padding: 1rem;
+      background: #222;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    nav a {
+      color: #fff;
+      margin: 0 1rem;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    nav a:hover {
+      color: #1db954;
+    }
+    section {
+      display: none;
+      padding: 2rem;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+    section.active {
+      display: block;
+    }
+    .center {
+      text-align: center;
+      margin-top: 2rem;
+    }
+    canvas {
+      background: #000;
+      display: block;
+      margin: 1rem auto;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+    }
+    input, button, select {
+      margin: 0.5rem;
+      padding: 0.6rem 1rem;
+      border: none;
+      border-radius: 5px;
+      background: #333;
+      color: #fff;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #1db954;
+      cursor: pointer;
+    }
+    .template-preview img {
+      width: 150px;
+      margin: 0.5rem;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: transform 0.3s;
+    }
+    .template-preview img:hover {
+      transform: scale(1.05);
+    }
+    .color-picker {
+      margin-top: 1rem;
+    }
+    .text-options {
+      margin-top: 1rem;
+    }
+    .font-options, .font-color-picker {
+      margin-top: 1rem;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(10px); }
+      to {opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div>L-SHAY Visualizer</div>
+    <div>
+      <a href="#" onclick="showSection('welcome')">Home</a>
+      <a href="#" onclick="showSection('editor')">Editor</a>
+      <a href="#" onclick="showSection('about')">About</a>
+      <a href="#" onclick="showSection('contact')">Contact</a>
+      <a href="#" onclick="logout()">Login</a>
+    </div>
+  </nav>
+
+  <section id="login" class="active center">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Enter Username" />
+    <button onclick="login()">Login</button>
+    <p>Don't have an account? <a href="#" onclick="showSection('signup')">Sign Up</a></p>
+  </section>
+
+  <section id="signup" class="center">
+    <h2>Sign Up</h2>
+    <input type="text" id="newUsername" placeholder="Create Username" />
+    <input type="password" id="newPassword" placeholder="Create Password" />
+    <button onclick="signUp()">Sign Up</button>
+    <p>Already have an account? <a href="#" onclick="showSection('login')">Log In</a></p>
+  </section>
+
+  <section id="welcome" class="center">
+    <h1>Welcome to L-SHAY Music Visualizer</h1>
+    <p>Transform your music into captivating visuals with customizable album covers and real-time animation.</p>
+  </section>
+
+  <section id="editor">
+    <h2>Visualizer Editor</h2>
+    <div>
+      <input type="file" id="audioFile" accept="audio/*">
+      <input type="file" id="bgImage" accept="image/*">
+      <input type="file" id="logoImage" accept="image/*">
+    </div>
+    <div>
+      <input type="text" id="artistName" placeholder="Artist Name">
+      <input type="text" id="trackName" placeholder="Track Name">
+      <select id="visualizerStyle">
+        <option value="bars">Bars</option>
+        <option value="circle">Circle</option>
+        <option value="wave">Wave</option>
+        <option value="spectrum">Spectrum</option>
+        <option value="glow">Glow</option>
+        <option value="pulse">Pulse</option>
+        <option value="particles">Particles</option>
+        <option value="fluid">Fluid</option>
+      </select>
+    </div>
+    <div class="color-picker">
+      <label for="colorPicker">Choose Visualizer Color:</label>
+      <input type="color" id="colorPicker" value="#ff0000">
+    </div>
+    <div class="text-options">
+      <label for="fontStyle">Choose Font Style:</label>
+      <select id="fontStyle">
+        <option value="Arial">Arial</option>
+        <option value="Verdana">Verdana</option>
+        <option value="Courier">Courier</option>
+        <option value="Georgia">Georgia</option>
+      </select>
+      <div class="font-color-picker">
+        <label for="fontColor">Choose Text Color:</label>
+        <input type="color" id="fontColor" value="#ffffff">
+      </div>
+    </div>
+    <div>
+      <label for="bgCategory">Choose Background Category:</label>
+      <select id="bgCategory">
+        <option value="music">Music</option>
+        <option value="nature">Nature</option>
+        <option value="space">Space</option>
+        <option value="city">City</option>
+      </select>
+      <button onclick="loadUnsplashImages()">Load Images</button>
+      <div id="unsplashResults"></div>
+    </div>
+    <div class="template-preview">
+      <img src="C:\Users\Lakshay\Downloads\ChatGPT Image May 15, 2025, 04_37_37 PM.png" alt="Template 1" onclick="setBackground(this.src)">
+      <img src="https://static.vecteezy.com/system/resources/previews/001/237/704/original/shiny-note-music-background-template-vector.jpg" alt="Template 2" onclick="setBackground(this.src)">
+      <img src="https://images.unsplash.com/photo-1544785349-c4a5301826fd" alt="Template 3" onclick="setBackground(this.src)">
+    </div>
+    <canvas id="visualizerCanvas" width="800" height="400"></canvas>
+    <button onclick="exportAsVideo()">Export as Video</button>
+  </section>
+
+  <section id="about">
+    <h2>About L-SHAY Visualizer</h2>
+    <p>This project is created by Lakshay Sharma (BCA 2C - 2322153). It enables music lovers and creators to generate stunning music visualizations with real-time animation and album cover customization.</p>
+  </section>
+
+  <section id="contact">
+    <h2>Contact</h2>
+    <p>Email: lakshaysharma170105@gmail.com</p>
+    <p>Instagram: <a href="https://instagram.com/imlakshaysharma1" target="_blank">@imlakshaysharma1</a></p>
+  </section>
+
+  <script>
+    const sections = document.querySelectorAll('section');
+    let mediaRecorder;
+    let recordedChunks = [];
+
+    function showSection(id) {
+      sections.forEach(sec => sec.classList.remove('active'));
+      const target = document.getElementById(id);
+      if (target) target.classList.add('active');
+    }
+
+    function login() {
+      const user = document.getElementById('username').value.trim();
+      if (user) {
+        localStorage.setItem('username', user);
+        showSection('welcome');
+      }
+    }
+
+    function signUp() {
+      const username = document.getElementById('newUsername').value.trim();
+      const password = document.getElementById('newPassword').value.trim();
+      if (username && password) {
+        localStorage.setItem('username', username);
+        localStorage.setItem('password', password);
+        showSection('welcome');
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('username');
+      localStorage.removeItem('password');
+      showSection('login');
+    }
+
+    if (localStorage.getItem('username')) {
+      showSection('welcome');
+    }
+
+    const canvas = document.getElementById("visualizerCanvas");
+    const ctx = canvas.getContext("2d");
+    let audioCtx, analyser, source, bufferLength, dataArray;
+    const bgImage = new Image();
+    const logoImage = new Image();
+    let currentStyle = 'bars';
+    let visualizerColor = "#ff0000";
+    let fontStyle = "Arial";
+    let fontColor = "#ffffff";
+
+    document.getElementById('audioFile').addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      const audio = new Audio(URL.createObjectURL(file));
+      audio.loop = true;
+      audio.play();
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      source = audioCtx.createMediaElementSource(audio);
+      source.connect(analyser);
+      analyser.connect(audioCtx.destination);
+      analyser.fftSize = 256;
+      bufferLength = analyser.frequencyBinCount;
+      dataArray = new Uint8Array(bufferLength);
+      animate();
+    });
+
+    document.getElementById('bgImage').addEventListener('change', e => {
+      const file = e.target.files[0];
+      bgImage.src = URL.createObjectURL(file);
+    });
+
+    document.getElementById('logoImage').addEventListener('change', e => {
+      const file = e.target.files[0];
+      logoImage.src = URL.createObjectURL(file);
+    });
+
+    document.getElementById('visualizerStyle').addEventListener('change', e => {
+      currentStyle = e.target.value;
+    });
+
+    document.getElementById('colorPicker').addEventListener('input', e => {
+      visualizerColor = e.target.value;
+    });
+
+    document.getElementById('fontStyle').addEventListener('change', e => {
+      fontStyle = e.target.value;
+    });
+
+    document.getElementById('fontColor').addEventListener('input', e => {
+      fontColor = e.target.value;
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (!analyser) return;
+      analyser.getByteFrequencyData(dataArray);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (bgImage.src) ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+
+      const barWidth = canvas.width / bufferLength;
+      for (let i = 0; i < bufferLength; i++) {
+        const barHeight = dataArray[i];
+        const x = i * barWidth;
+        const y = canvas.height - barHeight;
+        ctx.fillStyle = visualizerColor;
+
+        if (currentStyle === 'bars') ctx.fillRect(x, y, barWidth - 2, barHeight);
+        else if (currentStyle === 'circle') {
+          const radius = barHeight / 3;
+          ctx.beginPath();
+          ctx.arc(canvas.width / 2, canvas.height / 2, radius, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (currentStyle === 'wave') {
+          ctx.beginPath();
+          ctx.moveTo(0, canvas.height / 2);
+          for (let j = 0; j < bufferLength; j++) {
+            const x = j * barWidth;
+            const y = canvas.height / 2 + dataArray[j] / 2;
+            ctx.lineTo(x, y);
+          }
+          ctx.strokeStyle = 'cyan';
+          ctx.stroke();
+        } else if (currentStyle === 'spectrum') {
+          ctx.beginPath();
+          for (let j = 0; j < bufferLength; j++) {
+            const y = canvas.height / 2 + dataArray[j] / 2;
+            ctx.lineTo(j * barWidth, y);
+          }
+          ctx.strokeStyle = 'red';
+          ctx.stroke();
+        } else if (currentStyle === 'glow') {
+          ctx.shadowColor = visualizerColor;
+          ctx.shadowBlur = 20;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.shadowColor = 'transparent';
+        } else if (currentStyle === 'pulse') {
+          const pulseRadius = Math.sin(Date.now() / 1000) * 100 + 200;
+          ctx.beginPath();
+          ctx.arc(canvas.width / 2, canvas.height / 2, pulseRadius, 0, Math.PI * 2);
+          ctx.fillStyle = visualizerColor;
+          ctx.fill();
+        } else if (currentStyle === 'particles') {
+          ctx.beginPath();
+          for (let j = 0; j < bufferLength; j++) {
+            const x = j * barWidth;
+            const y = canvas.height / 2 + dataArray[j] / 2;
+            ctx.moveTo(x, y);
+            ctx.arc(x, y, 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        } else if (currentStyle === 'fluid') {
+          const offsetX = Math.sin(Date.now() / 1000) * 10;
+          ctx.beginPath();
+          for (let j = 0; j < bufferLength; j++) {
+            const x = j * barWidth + offsetX;
+            const y = canvas.height / 2 + dataArray[j] / 2;
+            ctx.lineTo(x, y);
+          }
+          ctx.strokeStyle = 'blue';
+          ctx.stroke();
+        }
+      }
+
+      const artist = document.getElementById('artistName').value;
+      const track = document.getElementById('trackName').value;
+      ctx.fillStyle = fontColor;
+      ctx.font = `24px ${fontStyle}`;
+      ctx.fillText(artist, 20, 30);
+      ctx.fillText(track, 20, 60);
+
+      if (logoImage.src) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(canvas.width / 2, canvas.height / 2, 60, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(logoImage, canvas.width / 2 - 60, canvas.height / 2 - 60, 120, 120);
+        ctx.restore();
+      }
+    }
+        async function loadUnsplashImages() {
+      const category = document.getElementById('bgCategory').value;
+      const unsplashAPI = `https://api.unsplash.com/search/photos?query=${category}&client_id=YOUR_UNSPLASH_API_KEY`;
+
+      try {
+        const response = await fetch(unsplashAPI);
+        const data = await response.json();
+        const results = data.results;
+        const unsplashResults = document.getElementById('unsplashResults');
+        unsplashResults.innerHTML = ''; // Clear previous results
+
+        results.forEach(image => {
+          const imgElement = document.createElement('img');
+          imgElement.src = image.urls.small;
+          imgElement.alt = 'Background Image';
+          imgElement.onclick = () => setBackground(imgElement.src);
+          unsplashResults.appendChild(imgElement);
+        });
+      } catch (error) {
+        console.error('Error loading Unsplash images:', error);
+      }
+    }
+
+    function setBackground(imageUrl) {
+      bgImage.src = imageUrl;
+    }
+
+    function exportAsVideo() {
+      // Assuming you have a function that records the canvas animation and exports it as a video file.
+      // This function can integrate media recording or third-party video export methods like FFmpeg.
+
+      if (!canvas) return;
+
+      const stream = canvas.captureStream(30); // 30 FPS
+      mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+      
+      mediaRecorder.ondataavailable = (event) => {
+        recordedChunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'visualizer-video.webm';
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      mediaRecorder.start();
+      setTimeout(() => {
+        mediaRecorder.stop(); // Stop recording after 10 seconds or as desired
+      }, 10000);
+    }
+
+    // Initialize canvas and visualizer when page loads
+    window.onload = function() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight * 0.6; // Adjust height for better visuals
+    };
+  </script>
+</body>
+</html>
